@@ -7,7 +7,7 @@ defmodule TableServerSix do
   # ----------------------------------------- #
   def start_link(start_number, server_name) do
     # use a function to get the global server name
-    GenServer.start_link(__MODULE__, start_number, name: server_name)
+    GenServer.start_link(__MODULE__, start_number, name: global_server_name(server_name))
   end
 
   def init(start_number) do
@@ -16,7 +16,7 @@ defmodule TableServerSix do
 
   def stop(server_name) do
     # use a function to get the global server name
-    GenServer.stop(server_name)
+    GenServer.stop(global_server_name(server_name))
   end
 
   def ping(server_name) do
@@ -30,13 +30,15 @@ defmodule TableServerSix do
   end
 
   defp whereis(server_name, action) when is_atom(server_name) do
-    case GenServer.whereis(server_name) do
+    case GenServer.whereis(global_server_name(server_name)) do
       nil -> {:error, :invalid_server}
-      _ -> GenServer.call(server_name, action)
+      _ -> GenServer.call(global_server_name(server_name), action)
     end
   end
 
-  defp whereis(_server_name, _action), do: {:error, :invalid_server}
+  defp global_server_name(server_name) do
+    {:global, {:servername, server_name}}
+  end
 
   # ----------------------------------------- #
   # Server - API                              #
